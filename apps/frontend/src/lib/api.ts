@@ -59,3 +59,26 @@ export const organizationsApi = {
     return response.data;
   },
 };
+
+// Memberships API
+export const membershipsApi = {
+  join: async (organizationId: string) => {
+    const response = await api.post(`/memberships/organizations/${organizationId}/join`);
+    return response.data;
+  },
+
+  leave: async (organizationId: string) => {
+    const response = await api.delete(`/memberships/organizations/${organizationId}/leave`);
+    return response.data;
+  },
+
+  getMembers: async (organizationId: string) => {
+    const response = await api.get(`/memberships/organizations/${organizationId}/members`);
+    return response.data;
+  },
+
+  getMyMemberships: async () => {
+    const response = await api.get('/memberships/my-memberships');
+    return response.data;
+  },
+};

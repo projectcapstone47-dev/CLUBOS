@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { organizationsApi } from '@/lib/api';
+import { organizationsApi, membershipsApi } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 
 interface Organization {
@@ -11,6 +11,9 @@ interface Organization {
   slug: string;
   description?: string;
   createdAt: string;
+  isMember: boolean;
+  isCreator: boolean;
+  memberCount: number;
   createdBy: {
     firstName?: string;
     lastName?: string;
@@ -61,6 +64,28 @@ export default function DashboardPage() {
       loadOrganizations();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create organization');
+    }
+  };
+
+  const handleJoin = async (orgId: string) => {
+    try {
+      await membershipsApi.join(orgId);
+      loadOrganizations();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to join organization');
+    }
+  };
+
+  const handleLeave = async (orgId: string, orgName: string) => {
+    if (!confirm(`Are you sure you want to leave ${orgName}?`)) {
+      return;
+    }
+
+    try {
+      await membershipsApi.leave(orgId);
+      loadOrganizations();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to leave organization');
     }
   };
 
@@ -204,11 +229,53 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-600 mb-4">
                   {org.description || 'No description'}
                 </p>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>/{org.slug}</span>
-                  <span>
-                    by {org.createdBy.firstName || org.createdBy.email}
+                
+                {/* Member count */}
+                <div className="text-xs text-gray-500 mb-3">
+                  {org.memberCount} {org.memberCount === 1 ? 'member' : 'members'}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    /{org.slug}
                   </span>
+                  
+                  <div className="flex gap-2">
+                    {org.isCreator ? (
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                        Creator
+                      </span>
+                    ) : org.isMember ? (
+                      <button
+                        onClick={() => handleLeave(org.id, org.name)}
+                        className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300"
+                      >
+                        Leave
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleJoin(org.id)}
+                        className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                      >
+                        Join
+                      </button>
+                    )}
+                    
+                    {(org.isMember || org.isCreator) && (
+                      <a
+                        href={`/organizations/${org.slug}/members`}
+                        className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded hover:bg-gray-200"
+                      >
+                        Members
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Creator info */}
+                <div className="text-xs text-gray-400 mt-2">
+                  by {org.createdBy.firstName || org.createdBy.email}
                 </div>
               </div>
             ))}

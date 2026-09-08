@@ -19,7 +19,7 @@ export class OrganizationsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.organizationsService.findOne(id);
+  async findOne(@Request() req, @Param('id') id: string) {
+    return this.organizationsService.findOne(id, req.user.id);
   }
 }

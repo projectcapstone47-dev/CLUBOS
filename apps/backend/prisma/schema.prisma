@@ -18,7 +18,9 @@ model User {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   
-  organizations Organization[]
+  // Relations
+  organizations Organization[]  @relation("CreatedOrganizations")
+  memberships   Membership[]
 
   @@map("users")
 }
@@ -29,9 +31,28 @@ model Organization {
   slug        String   @unique
   description String?
   createdById String   @map("created_by_id")
-  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdBy   User     @relation("CreatedOrganizations", fields: [createdById], references: [id])
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  // Relations
+  memberships Membership[]
+
   @@map("organizations")
+}
+
+model Membership {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  organizationId String   @map("organization_id")
+  role           String   @default("member")
+  status         String   @default("active")
+  joinedAt       DateTime @default(now()) @map("joined_at")
+  
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@map("memberships")
 }

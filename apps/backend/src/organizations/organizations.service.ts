@@ -1,10 +1,14 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MembershipsService } from '../memberships/memberships.service';
 import { CreateOrganizationDto } from './dto';
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private membershipsService: MembershipsService,
+  ) {}
 
   async create(userId: string, dto: CreateOrganizationDto) {
     // Check if slug is taken
@@ -40,8 +44,6 @@ export class OrganizationsService {
   }
 
   async findAll(userId: string) {
-    // For now, return all organizations
-    // Later we'll filter by membership
     const organizations = await this.prisma.organization.findMany({
       include: {
         createdBy: {
@@ -52,17 +54,37 @@ export class OrganizationsService {
             lastName: true,
           },
         },
+        _count: {
+          select: {
+            memberships: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    return organizations;
+    // Add membership status for each organization
+    const orgsWithMembership = await Promise.all(
+      organizations.map(async (org) => {
+        const isMember = await this.membershipsService.checkMembership(userId, org.id);
+        const isCreator = org.createdById === userId;
+        
+        return {
+          ...org,
+          isMember,
+          isCreator,
+          memberCount: org._count.memberships,
+        };
+      }),
+    );
+
+    return orgsWithMembership;
   }
 
-  async findOne(id: string) {
-    return this.prisma.organization.findUnique({
+  async findOne(id: string, userId?: string) {
+    const organization = await this.prisma.organization.findUnique({
       where: { id },
       include: {
         createdBy: {
@@ -73,7 +95,34 @@ export class OrganizationsService {
             lastName: true,
           },
         },
+        _count: {
+          select: {
+            memberships: true,
+          },
+        },
       },
     });
+
+    if (!organization) {
+      return null;
+    }
+
+    // Add membership info if userId provided
+    if (userId) {
+      const isMember = await this.membershipsService.checkMembership(userId, id);
+      const isCreator = organization.createdById === userId;
+
+      return {
+        ...organization,
+        isMember,
+        isCreator,
+        memberCount: organization._count.memberships,
+      };
+    }
+
+    return {
+      ...organization,
+      memberCount: organization._count.memberships,
+    };
   }
 }

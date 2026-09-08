@@ -2,6 +2,59 @@
 
 All notable changes to Club OS will be documented in this file.
 
+## [0.2.0] - 2026-09-08
+
+### Added - Vertical Slice #2: Memberships
+
+**Backend:**
+- Membership model with user-organization many-to-many relationship
+- Join organization endpoint (`POST /memberships/organizations/:id/join`)
+- Leave organization endpoint (`DELETE /memberships/organizations/:id/leave`)
+- Get members endpoint (`GET /memberships/organizations/:id/members`)
+- Get user memberships endpoint (`GET /memberships/my-memberships`)
+- Organization API now includes membership status (isMember, isCreator, memberCount)
+- Validation: Creator cannot leave their own organization
+- Validation: Cannot join organization twice
+
+**Frontend:**
+- Join/Leave buttons on organization cards
+- Member count display
+- Creator badge
+- Members page (`/organizations/:slug/members`)
+- Member list with avatars, names, emails, roles, and join dates
+- Real-time UI updates after join/leave actions
+- Confirmation dialog before leaving
+
+**Database:**
+- Memberships table with unique constraint on (user_id, organization_id)
+- Role field (defaults to "member")
+- Status field (defaults to "active")
+- Joined_at timestamp
+
+**Documentation:**
+- Migration steps guide
+- Comprehensive testing guide with test scenarios
+- API testing commands
+- Edge cases documentation
+
+### What Works
+
+1. User can join any organization
+2. User can leave organizations (except if creator)
+3. Organization cards show membership status
+4. Members page lists all organization members
+5. Member count updates dynamically
+6. Creators get special badge
+7. Proper error handling and validation
+
+### Next Slice
+
+- Events (create, list, view)
+- Event approval workflow
+- Event registration
+
+---
+
 ## [0.1.0] - 2026-09-08
 
 ### Added - Vertical Slice #1
