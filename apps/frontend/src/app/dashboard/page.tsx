@@ -263,12 +263,20 @@ export default function DashboardPage() {
                     )}
                     
                     {(org.isMember || org.isCreator) && (
-                      <a
-                        href={`/organizations/${org.slug}/members`}
-                        className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded hover:bg-gray-200"
-                      >
-                        Members
-                      </a>
+                      <>
+                        <a
+                          href={`/organizations/${org.slug}/members`}
+                          className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded hover:bg-gray-200"
+                        >
+                          Members
+                        </a>
+                        <a
+                          href={`/organizations/${org.slug}/events`}
+                          className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded hover:bg-gray-200"
+                        >
+                          Events
+                        </a>
+                      </>
                     )}
                   </div>
                 </div>

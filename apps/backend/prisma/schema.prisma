@@ -21,6 +21,7 @@ model User {
   // Relations
   organizations Organization[]  @relation("CreatedOrganizations")
   memberships   Membership[]
+  activities    Activity[]      @relation("CreatedActivities")
 
   @@map("users")
 }
@@ -37,6 +38,7 @@ model Organization {
 
   // Relations
   memberships Membership[]
+  activities  Activity[]
 
   @@map("organizations")
 }
@@ -55,4 +57,46 @@ model Membership {
 
   @@unique([userId, organizationId])
   @@map("memberships")
+}
+
+// Base table for all activities (events, tasks, meetings, etc.)
+model Activity {
+  id             String   @id @default(uuid())
+  type           String   // 'event', 'task', 'meeting', etc.
+  title          String
+  description    String?
+  organizationId String   @map("organization_id")
+  createdById    String   @map("created_by_id")
+  status         String   @default("draft") // draft, published, cancelled, completed
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("CreatedActivities", fields: [createdById], references: [id])
+  event        Event?
+
+  @@index([organizationId])
+  @@index([type])
+  @@index([status])
+  @@map("activities")
+}
+
+// Events extend activities
+model Event {
+  id           String    @id @default(uuid())
+  activityId   String    @unique @map("activity_id")
+  startDate    DateTime  @map("start_date")
+  endDate      DateTime? @map("end_date")
+  venue        String?
+  eventType    String    @default("general") @map("event_type") // general, workshop, seminar, competition, social
+  maxAttendees Int?      @map("max_attendees")
+  isPublic     Boolean   @default(true) @map("is_public")
+
+  // Relations
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([startDate])
+  @@index([eventType])
+  @@map("events")
 }

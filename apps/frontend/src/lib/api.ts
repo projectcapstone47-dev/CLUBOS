@@ -82,3 +82,63 @@ export const membershipsApi = {
     return response.data;
   },
 };
+
+// Events API
+export const eventsApi = {
+  create: async (data: {
+    title: string;
+    description?: string;
+    organizationId: string;
+    startDate: string;
+    endDate?: string;
+    venue?: string;
+    eventType?: string;
+    maxAttendees?: number;
+    isPublic?: boolean;
+  }) => {
+    const response = await api.post('/events', data);
+    return response.data;
+  },
+
+  getAll: async (organizationId?: string, status?: string) => {
+    const params = new URLSearchParams();
+    if (organizationId) params.append('organizationId', organizationId);
+    if (status) params.append('status', status);
+    
+    const response = await api.get(`/events?${params.toString()}`);
+    return response.data;
+  },
+
+  getByOrganization: async (organizationId: string, upcoming: boolean = false) => {
+    const response = await api.get(
+      `/events/organization/${organizationId}?upcoming=${upcoming}`
+    );
+    return response.data;
+  },
+
+  getOne: async (id: string) => {
+    const response = await api.get(`/events/${id}`);
+    return response.data;
+  },
+
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/events/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await api.delete(`/events/${id}`);
+    return response.data;
+  },
+
+  publish: async (id: string) => {
+    const response = await api.post(`/events/${id}/publish`);
+    return response.data;
+  },
+
+  cancel: async (id: string) => {
+    const response = await api.post(`/events/${id}/cancel`);
+    return response.data;
+  },
+};
+

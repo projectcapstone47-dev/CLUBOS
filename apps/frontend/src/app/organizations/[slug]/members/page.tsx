@@ -119,6 +119,20 @@ export default function MembersPage() {
                 {organization?.name}
               </h1>
             </div>
+            <div className="flex items-center gap-4">
+              <a
+                href={`/organizations/${slug}/members`}
+                className="text-sm font-medium text-blue-600"
+              >
+                Members
+              </a>
+              <a
+                href={`/organizations/${slug}/events`}
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Events
+              </a>
+            </div>
           </div>
         </div>
       </nav>
